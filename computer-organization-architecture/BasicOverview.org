@@ -1,0 +1,29 @@
+#+title: Basic Overview
+#+author: Hongbin Qu
+#+date: <2026-09-07 Mon>
+#+hugo_section: en/cs/org-arch
+#+hugo_tags: "computer organization and architecture"
+#+hugo_categories: "cs" "org-arch"
+#+hugo_custom_front_matter: :logs ""
+#+hugo_custom_front_matter: :logs_descripe ""
+
+
+* 计算机系统概述
+
++ 计算机基本工作原理
+  1. 冯诺伊曼结构基本思想
+     + 存储程序~程序控制
+     + 计算机由运算其,控制器,存储器,输入设备,输出设备五大基本部件
+     + 存储器能放数据,也能放指令
+     + 计算机内部以二进制的形式表示指令和数据；每条指令由*操作码*和*地址码*两部分组成
+
+#+begin_quote
+存储器能放数据,也能放指令. 那么CPU区把拿到等二进制是指令还是数据?
+1. 时间维度(最核心、最本质的区别是CPU执行周期是固定的)
+   在“取指”阶段,CPU获取的二进制串肯定就是“操作命令”
+   在“执行”阶段,指令被解析后，CPU就知道要进行什么操作了（例如加法运算），这时候去内存获取参与运算的具体数值。这个时候获取的二进制串肯定是“数据”
+2. 空间维度
+   指令地址来源：程序计数器(PC)永远指向下一条要执行的指令在内存中的地址，只要地址是PC提供的，CPU就知道取回来的肯定是指令
+   数据地址来源：当一条指令被取出来并解析后，指令内部会有一个“地址码”。CPU会根据这个地址去内存指定位置，把里面的内容当作“数据”拿去出来
+#+end_quote
+
