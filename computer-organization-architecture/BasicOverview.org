@@ -1,7 +1,7 @@
 #+title: Basic Overview
 #+author: Hongbin Qu
 #+date: <2026-09-07 Mon>
-#+hugo_section: en/cs/org-arch
+#+hugo_section: zh-cn/cs/org-arch
 #+hugo_tags: "computer organization and architecture"
 #+hugo_categories: "cs" "org-arch"
 #+hugo_custom_front_matter: :logs ""
