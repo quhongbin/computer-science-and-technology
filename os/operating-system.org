@@ -535,7 +535,3 @@ DEADLINE: <2026-08-27 Thu> SCHEDULED: <2026-08-27 Thu>
 + Next Fit
 + segregated Lists
 
-* TODO test
-DEADLINE: <2026-08-27 Thu> SCHEDULED: <2026-08-27 Thu>
-
-+ to explain stack memory how to allocate<2026-07-10 Fri>
