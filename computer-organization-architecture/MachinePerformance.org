@@ -3,18 +3,16 @@
 #+date: <2026-09-09 Wed>
 #+hugo_section: zh-cn/cs/org-arch
 #+hugo_tags: "computer organization and architecture"
-#+hugo_categories: "cs"
+#+hugo_categories: "cs-architecture"
 #+hugo_custom_front_matter: :logs "程序的机器级别表示"
 #+hugo_custom_front_matter: :logs_descripe "哎，神是孤独！！！"
 
 
 * 程序的转换及机器级表示
 
----
-
 * 本章学习地图
 
-```mermaid
+#+begin_src mermaid
 flowchart LR
     A["C语言源程序"] --> B["编译器"]
     B --> C["汇编程序"]
@@ -32,7 +30,7 @@ flowchart LR
     L --> O["数组、结构体、联合体"]
     O --> P["数据对齐"]
     G --> Q["x86-64扩展"]
-```
+#+end_src
 
 本章有三条核心主线：
 
@@ -46,7 +44,16 @@ flowchart LR
 - ~M[addr]~ ：从地址 ~addr~ 开始的存储单元内容。
 - ~R[eax] <- M[R[ebp]+4]~ ：把 ~EBP+4~ 所指内存中的数据送入EAX。
 
+本文章使用IA-32指令集,AT&T语法格式演示
+
+同一个指令集拥有是不同的语法，但它们都会正确的翻译成对应的目标硬件的机器码。具体知识请查看[[file:posts/Architecture.org::*一、核心问题：什么是"架构"？][架构]]
+
+在Intel语法中，靠括号[]来区分内存（mov eax, [ebx]），寄存器直接写。
+在AT&T语法中，靠前缀%来区分寄存器（movl (%ebx), %eax），内存靠括号。
+
+
 ---
+
 
 ** 1 程序转换概述
 
@@ -97,12 +104,13 @@ add:
 - 返回值放在 ~%eax~ 中。
 - ~ret~ 从栈中取得返回地址并返回调用者。
 
-```mermaid
+#+begin_src mermaid
 flowchart LR
     A["C表达式 a+b"] --> B["汇编：mov/add"]
     B --> C["二进制机器指令"]
     C --> D["CPU取指、译码、执行"]
-```
+#+end_src
+
 
 **** 补充与易错点
 
@@ -115,13 +123,14 @@ flowchart LR
 
 指令集体系结构ISA是软件与硬件之间的接口规范。编译器按照ISA生成机器代码，处理器则负责正确实现这些指令的语义。
 
-```mermaid
+#+begin_src mermaid
 flowchart TB
     A["应用程序"] --> B["编译器和操作系统"]
     B --> C["ISA：软硬件接口"]
     C --> D["处理器微体系结构"]
     D --> E["流水线、执行单元、Cache和物理寄存器"]
-```
+#+end_src
+
 
 **** ISA通常规定
 
@@ -163,7 +172,7 @@ ISA还不是完整的二进制兼容规则。操作系统、编译器和库通�
 | 代码密度   | 通常较高                 | 与指令宽度和压缩扩展有关 |
 | 代表       | x86/IA-32                | ARM、RISC-V、LoongArch   |
 
-**** 示例：实现`c=a+b`
+**** 示例：实现 ~c=a+b~
 
 装入-存储型指令系统可抽象为：
 
@@ -187,19 +196,20 @@ movl %eax, c
 
 **** 现代处理器中的融合
 
-```mermaid
+#+begin_src mermaid
 flowchart LR
     A["复杂x86指令"] --> B["前端译码"]
     B --> C["内部微操作"]
     C --> D["调度与乱序执行"]
     D --> E["执行单元"]
-```
+#+end_src
+
 
 现代x86处理器对外保持CISC形式，对内常把复杂指令转换成较简单的微操作。因此“RISC一定比CISC快”并不成立；性能还取决于实现、缓存、编译器和工作负载。
 
 *** 3.1.4 生成机器代码的过程
 
-```mermaid
+#+begin_src mermaid
 flowchart LR
     A["源程序 .c"] --> B["预处理"]
     B --> C["预处理结果 .i"]
@@ -209,7 +219,7 @@ flowchart LR
     F --> G["可重定位目标文件 .o"]
     G --> H["链接"]
     H --> I["可执行文件"]
-```
+#+end_src
 
 **** 预处理
 
@@ -255,11 +265,11 @@ ret
 
 观察代码可使用：
 
-```bash
+#+begin_src bash
 gcc -m32 -O0 -S example.c -o example_O0.s
 gcc -m32 -O2 -S example.c -o example_O2.s
 objdump -d example.o
-```
+#+end_src
 
 ---
 
@@ -296,12 +306,13 @@ IA-32指令主要按操作数宽度处理位串。位串本身不携带“有符
 0x1003: 12
 #+end_example
 
-```mermaid
+#+begin_src mermaid
 flowchart LR
     A["低地址 0x1000<br/>78"] --> B["0x1001<br/>56"]
     B --> C["0x1002<br/>34"]
     C --> D["高地址 0x1003<br/>12"]
-``` 
+#+end_src
+
 
 **** 扩展
 
@@ -339,12 +350,13 @@ movsbl %al, %eax
 - ~EFLAGS~ 保存条件码和控制标志。
 - 段寄存器参与IA-32分段机制。
 
-```mermaid
+#+begin_src mermaid
 flowchart TB
     EAX["EAX：32位"] --> AX["AX：低16位"]
     AX --> AH["AH：第8～15位"]
     AX --> AL["AL：低8位"]
-```
+#+end_src
+
 
 **** 有效地址
 
@@ -369,11 +381,11 @@ movl 12(%ebp, %ecx, 4), %eax
 **** 常见寻址方式
 
 #+begin_src asm
-movl $10, %eax              * 立即寻址
-movl %ebx, %eax             * 寄存器寻址
-movl (%eax), %edx           * 寄存器间接
-movl 8(%ebp), %eax          * 基址加位移
-movl (%eax,%ecx,4), %edx    * 基址+变址×比例
+movl $10, %eax              // 立即寻址
+movl %ebx, %eax             // 寄存器寻址
+movl (%eax), %edx           // 寄存器间接
+movl 8(%ebp), %eax          // 基址加位移
+movl (%eax,%ecx,4), %edx    // 基址+变址×比例
 #+end_src
 
 若 ~%eax~ 保存 ~int a[]~ 的首地址、 ~%ecx~ 保存下标 ~i~ ，最后一条指令实现 ~edx=a[i]~ 。
@@ -382,14 +394,15 @@ movl (%eax,%ecx,4), %edx    * 基址+变址×比例
 
 IA-32指令采用1～15字节的可变长度编码，通常由以下部分组成：
 
-```mermaid
+#+begin_src mermaid
 flowchart LR
     A["可选前缀"] --> B["操作码"]
     B --> C["可选 ModR/M"]
     C --> D["可选 SIB"]
     D --> E["可选位移量"]
     E --> F["可选立即数"]
-```
+#+end_src
+
 
 - **前缀** ：改变操作数长度、地址长度、重复方式或锁定语义。
 - **操作码** ：规定基本操作。
@@ -464,13 +477,15 @@ pushl: ESP <- ESP-4; M[ESP] <- EAX
 popl:  EBX <- M[ESP]; ESP <- ESP+4
 #+end_example
 
-``` mermaid
+#+begin_src mermaid
 flowchart LR
     A["push前"] --> B["ESP减4"]
     B --> C["写入新栈顶"]
     C --> D["pop读取栈顶"]
     D --> E["ESP加4"]
-``` 
+#+end_src
+
+因为在x86架构中，栈是“向下生长”的（从高地址向低地址扩展）,所以ESP栈顶指针在扩展栈空间时进行“减”运算
 
 注意： ~lea~ 与 ~mov~ 的根本差别是前者不访存； ~push/pop~ 会隐式修改ESP。
 
@@ -498,17 +513,17 @@ cmpl %ebx, %eax
 **** 乘法
 
 #+begin_src asm
-mull operand       * EDX:EAX <- EAX * operand，无符号
-imull operand      * 有符号扩展宽度乘法
-imull %ebx, %eax   * EAX <- EAX * EBX
+mull operand       // EDX:EAX <- EAX * operand，无符号
+imull operand      // 有符号扩展宽度乘法
+imull %ebx, %eax   // EAX <- EAX * EBX
 #+end_src
 
 **** 除法
 
 #+begin_src asm
-divl %ecx          * EDX:EAX无符号除以ECX
+divl %ecx          // EDX:EAX无符号除以ECX
 cltd
-idivl %ecx         * EDX:EAX有符号除以ECX
+idivl %ecx         // EDX:EAX有符号除以ECX
 #+end_src
 
 
@@ -527,10 +542,10 @@ testl %eax, %eax
 掩码应用：
 
 #+begin_src asm
-andl $0xFF, %eax          * 保留最低8位
-orl  $0x08, %eax         * 把第3位置1
-andl $0xFFFFFFF7, %eax    * 把第3位清0
-xorl $0x08, %eax         * 翻转第3位
+andl $0xFF, %eax          // 保留最低8位
+orl  $0x08, %eax          // 把第3位置1
+andl $0xFFFFFFF7, %eax    // 把第3位清0
+xorl $0x08, %eax          // 翻转第3位
 #+end_src
 
 
@@ -540,9 +555,9 @@ xorl $0x08, %eax         * 翻转第3位
 **** 移位
 
 #+begin_src asm
-shll $1, %eax    * 左移
-shrl $1, %eax    * 逻辑右移，高位补0
-sarl $1, %eax    * 算术右移，高位补符号位
+shll $1, %eax    // 左移
+shrl $1, %eax    // 逻辑右移，高位补0
+sarl $1, %eax    // 算术右移，高位补符号位
 #+end_src
 
 
@@ -606,14 +621,15 @@ movl $1, x
 #+end_src
 
 
-~ ~ ~ mermaid
+#+begin_src mermaid
 flowchart TD
     A["比较a与b"] --> B{"a<b?"}
     B -- 是 --> C["x=1"]
     B -- 否 --> D["x=0"]
     C --> E["继续"]
     D --> E
-~ ~ ~ 
+#+end_src
+
 
 ~call~ 把返回地址压栈后跳到被调用过程； ~ret~ 从栈顶取出返回地址。条件跳转依赖之前设置的标志，比较与跳转之间不能随意插入修改标志的指令。
 
@@ -651,7 +667,7 @@ ret
 
 ~leave~ 近似等于 ~movl %ebp,%esp; popl %ebp~ 。
 
-~ ~ ~ mermaid
+#+begin_src mermaid
 flowchart TB
     A["高地址"] --> B["后续参数"]
     B --> C["第一个参数"]
@@ -659,7 +675,8 @@ flowchart TB
     D --> E["旧EBP：0(%ebp)"]
     E --> F["局部变量：负偏移"]
     F --> G["低地址 / 当前ESP"]
-~ ~ ~ 
+#+end_src
+
 
 **** 示例
 
@@ -718,25 +735,27 @@ if (p != NULL && p->value > 0)
 
 必须先判断 ~p~ 非空，才可读取 ~p->value~ 。
 
-~ ~ ~ mermaid
+#+begin_src mermaid
 flowchart TD
     A{"p非空?"} -- 否 --> D["条件为假"]
     A -- 是 --> B{"p->value>0?"}
     B -- 否 --> D
     B -- 是 --> C["条件为真"]
-~ ~ ~ 
+#+end_src
+
 
 **** switch
 
 分支少或case稀疏时，可生成连续比较；case密集时，可使用跳转表：
 
-~ ~ ~ mermaid
+#+begin_src mermaid
 flowchart TD
     A["index=x-min"] --> B{"index越界?"}
     B -- 是 --> C["default"]
     B -- 否 --> D["读取jump_table[index]"]
     D --> E["间接跳转到case"]
-~ ~ ~ 
+#+end_src
+
 
 简单、无副作用的条件表达式还可能使用 ~cmov~ 条件传送，减少不可预测分支，但两个候选值通常都需要可安全计算。
 
@@ -744,14 +763,15 @@ flowchart TD
 
 ~while~ 、 ~do-while~ 和 ~for~ 最终都由比较、条件跳转和回跳构成。
 
-~ ~ ~ mermaid
+#+begin_src mermaid
 flowchart TD
     A["初始化"] --> B{"循环条件?"}
     B -- 否 --> E["退出"]
     B -- 是 --> C["循环体"]
     C --> D["更新变量"]
     D --> B
-~ ~ ~ 
+#+end_src
+
 
 **** 数组求和
 
@@ -766,8 +786,8 @@ int sum_array(int *a,int n) {
 抽象汇编：
 
 #+begin_src asm
-xorl %eax, %eax              * sum=0
-xorl %ecx, %ecx              * i=0
+xorl %eax, %eax              // sum=0
+xorl %ecx, %ecx              // i=0
 .Lloop:
     cmpl n, %ecx
     jge .Ldone
@@ -793,15 +813,15 @@ xorl %ecx, %ecx              * i=0
 
 一维数组元素地址：
 
-~ ~ ~ text
+#+begin_example
 &A[i] = base(A) + i * sizeof(A[0])
-~ ~ ~ 
+#+end_example
 
 例如 ~int a[10]~ 首地址为 ~0x1000~ ，则：
 
-~ ~ ~ text
+#+begin_example
 &a[3] = 0x1000 + 3*4 = 0x100C
-~ ~ ~ 
+#+end_example
 
 #+begin_src asm
 movl (%eax,%ecx,4), %edx
@@ -813,17 +833,19 @@ movl (%eax,%ecx,4), %edx
 
 C语言按行优先存放 ~int a[R][C]~ ：
 
-~ ~ ~ text
+#+begin_example
 &a[i][j] = base(a) + (i*C+j)*sizeof(int)
-~ ~ ~ 
+#+end_example
 
-~ ~ ~ mermaid
+
+#+begin_src mermaid
 flowchart LR
     A["a[0][0]"] --> B["a[0][1]"]
     B --> C["..."]
     C --> D["a[0][C-1]"]
     D --> E["a[1][0]"]
-~ ~ ~ 
+#+end_src
+
 
 ~a[i]~ 等价于 ~*(a+i)~ ，指针加法会自动按元素宽度缩放。普通C数组访问没有自动边界检查；越界会产生未定义行为，并可能破坏其他数据。
 
@@ -841,22 +863,23 @@ struct S {
 
 典型4字节对齐布局：
 
-~ ~ ~ text
+#+begin_example
 偏移0：c，1字节
 偏移1～3：填充
 偏移4～7：i
 偏移8～9：s
 偏移10～11：尾部填充
 总大小：12字节
-~ ~ ~ 
+#+end_example
 
-~ ~ ~ mermaid
+#+begin_src mermaid
 flowchart LR
     A["c 1B"] --> B["填充 3B"]
     B --> C["i 4B"]
     C --> D["s 2B"]
     D --> E["尾部填充 2B"]
-~ ~ ~ 
+#+end_src
+
 
 若结构体首地址在EAX， ~i~ 的偏移为4：
 
@@ -880,12 +903,13 @@ union U {
 
 所有成员共享同一段存储空间。联合体大小至少容纳最大成员，并满足最严格成员的对齐要求。
 
-~ ~ ~ mermaid
+#+begin_src mermaid
 flowchart TB
     A["同一段存储空间"] --> B["按int解释"]
     A --> C["按double解释"]
     A --> D["按char[8]解释"]
-~ ~ ~ 
+#+end_src
+
 
 若写入 ~u.i=0x12345678~ ，在小端机器观察字节可能得到 ~78 56 34 12~ 。但跨平台程序不能轻率依赖字节序、类型大小、浮点格式或未初始化剩余字节。
 
@@ -904,9 +928,9 @@ struct Value {
 
 若对象要求 ~a~ 字节对齐，则其地址满足：
 
-~ ~ ~ text
+#+begin_example
 address mod a = 0
-~ ~ ~ 
+#+end_example
 
 典型自然对齐：
 
@@ -925,9 +949,10 @@ address mod a = 0
 
 把地址 ~x~ 向上调整到2的幂 ~a~ 的倍数：
 
-~ ~ ~ text
+#+begin_example
 aligned = (x+a-1) & ~(a-1)
-~ ~ ~ 
+#+end_example
+
 
 例如13按8字节向上对齐得到16。
 
@@ -947,18 +972,18 @@ x86-64在兼容x86的基础上扩展了寄存器和地址能力。
 - 支持RIP相对寻址，便于生成位置无关代码。
 - 现代ABI主要使用SSE/AVX寄存器处理浮点参数和运算。
 
-~ ~ ~ mermaid
+#+begin_src mermaid
 flowchart TB
     A["RAX 64位"] --> B["EAX 低32位"]
     B --> C["AX 低16位"]
     C --> D["AH 第8～15位"]
     C --> E["AL 低8位"]
-~ ~ ~ 
+#+end_src
 
 在x86-64模式下，写32位寄存器会自动清零对应64位寄存器的高32位：
 
 #+begin_src asm
-movl $1, %eax     * RAX变为0x0000000000000001
+movl $1, %eax     // RAX变为0x0000000000000001
 #+end_src
 
 写8位或16位子寄存器通常不会自动清除其余高位。
@@ -969,9 +994,9 @@ movl $1, %eax     * RAX变为0x0000000000000001
 
 以下采用教材所述类Unix System V AMD64约定。前6个整数或指针参数通常依次放入：
 
-~ ~ ~ text
+#+begin_example
 RDI, RSI, RDX, RCX, R8, R9
-~ ~ ~ 
+#+end_example
 
 更多参数放在栈中，整数返回值通常放在RAX，浮点参数和返回值通常使用XMM寄存器。
 
@@ -998,7 +1023,7 @@ add3:
 
 调用边界还要遵守16字节栈对齐要求。
 
-~ ~ ~ mermaid
+#+begin_src mermaid
 flowchart TD
     A["调用者准备寄存器参数"] --> B["调整栈并保持对齐"]
     B --> C["call压入返回地址"]
@@ -1006,7 +1031,8 @@ flowchart TD
     D --> E["执行函数体"]
     E --> F["恢复寄存器和RSP"]
     F --> G["ret返回"]
-~ ~ ~ 
+#+end_src
+
 
 Windows x64调用约定与System V不同，不能把上述参数寄存器规则直接套用到Windows目标程序。
 
@@ -1023,9 +1049,9 @@ subq $8, %rsp
 不同宽度转换：
 
 #+begin_src asm
-movl   %edi, %eax      * 写EAX并清RAX高32位
-movslq %edi, %rax      * 32位有符号扩展到64位
-movzbq %dil, %rax      * 8位零扩展到64位
+movl   %edi, %eax      // 写EAX并清RAX高32位
+movslq %edi, %rax      // 32位有符号扩展到64位
+movzbq %dil, %rax      // 8位零扩展到64位
 #+end_src
 
 地址计算：
@@ -1137,6 +1163,3 @@ gcc -m32 -O2 -S test.c -o test_O2.s
 - 循环和条件分别对应哪些跳转。
 - ~sum~ 和 ~i~ 位于栈还是寄存器。
 - 优化后是否省略栈帧、合并分支或改变循环结构。
-
-p
-

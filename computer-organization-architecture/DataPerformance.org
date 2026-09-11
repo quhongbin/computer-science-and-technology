@@ -3,7 +3,7 @@
 #+date: <2026-09-08 Tue>
 #+hugo_section: zh-cn/cs/org-arch
 #+hugo_tags: "computer organization and architecture"
-#+hugo_categories: "cs" "org-arch"
+#+hugo_categories: "cs-architecture"
 #+hugo_custom_front_matter: :logs "数据的表示和计算"
 #+hugo_custom_front_matter: :logs_descripe "没时间了，快快学习"
 
@@ -618,8 +618,8 @@ $$C1540000H$$
 +\underbrace{0x56}_{byte1}\!\times2^{8}
 +\underbrace{0x78}_{byte0}\!\times2^{0}\)
 
-[[#move-bits][算术移位运算
-]]
+[[#move-bits][算术移位运算]]
+
 ***** 大端方式
 低地址存放最高(数值权重)有效字节：
 
@@ -669,7 +669,7 @@ $$C1540000H$$
 - ~int~ ：大小 4，对齐 4。
 - ~short~ ：大小 2，对齐 2。
 
-#+begin_src 
+#+begin_src C
 struct S {
     char  c;
     int   i;
@@ -1286,14 +1286,13 @@ $(-1)^{S_x\oplus S_y}\left(\frac{M_x}{M_y}\right) 2^{E_x-E_y}$
 
 *** 14.3 浮点乘除特殊结果
 
-| 运算        | 典型结果     |
-| --------- | -------- |
-| 有限非零数 ÷ 0 | 带符号无穷大   |
-| 0 ÷ 0     | NaN      |
-| ∞ ÷ ∞     | NaN      |
-| 0 × ∞     | NaN      |
-| 有限数 × ∞   | 带符号无穷大   |
-| NaN 参与运算  | 通常仍为 NaN |
+| 运算           | 典型结果     |
+| 有限非零数 ÷ 0 | 带符号无穷大 |
+| 0 ÷ 0          | NaN          |
+| ∞ ÷ ∞          | NaN          |
+| 0 × ∞          | NaN          |
+| 有限数 × ∞     | 带符号无穷大 |
+| NaN 参与运算   | 通常仍为 NaN |
 
 ***** 注意事项
 - 不能只对存储的阶码字段直接相加或相减而忘记偏置修正。
@@ -1405,5 +1404,3 @@ $E_z=E_x-E_y+Bias$
 最重要的原则是：
 
 > **先确定位数和解释方式，再计算；先得到机器结果，再判断它能否代表数学结果。**
-
-

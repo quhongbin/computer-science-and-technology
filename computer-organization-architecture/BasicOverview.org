@@ -3,7 +3,7 @@
 #+date: <2026-09-07 Mon>
 #+hugo_section: zh-cn/cs/org-arch
 #+hugo_tags: "computer organization and architecture"
-#+hugo_categories: "cs" "org-arch"
+#+hugo_categories: "cs-architecture"
 #+hugo_custom_front_matter: :logs ""
 #+hugo_custom_front_matter: :logs_descripe ""
 
